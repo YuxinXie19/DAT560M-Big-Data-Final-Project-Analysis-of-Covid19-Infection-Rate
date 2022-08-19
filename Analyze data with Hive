@@ -1,0 +1,50 @@
+#Analyze sum of cases by month
+SELECT date,sum(cases)
+from usa_covid19
+group by date
+order by date;
+
+#Analyze sum of cases by state
+SELECT state,sum(case_num)
+FROM (select county,state,max(cases) as case_num 
+from usa_covid19 
+group by county,state) as t1
+group by state
+having sum(case_num) is not null
+order by sum(case_num) desc limit 15;
+
+#Calculate vaccination rate
+SELECT state,sum(case_num),avg(vac) as percent_vaccinated
+FROM (select county,state,max(cases) as case_num,avg(percent_vaccinated) as vac 
+from usa_covid19
+group by county,state) as t1
+group by state
+having sum(case_num) is not null
+order by avg(vac);
+
+#Calculate smoking rate
+SELECT state,sum(case_num),avg(smoker) as percent_smoker
+FROM (select county,state,max(cases) as case_num,avg(percent_smokers) as smoker 
+from usa_covid19 
+group by county,state) as t1
+group by state
+having sum(case_num) is not null
+order by avg(smoker);
+
+#Calculate percentage of seniors
+SELECT state,sum(case_num),avg(older) as percent_old_people
+FROM (select county,state,max(cases) as case_num,avg(percent_65_and_over) as older
+from usa_covid19
+group by county,state) as t1
+group by state
+having sum(case_num) is not null
+order by avg(older);
+
+#Calculate average temprature of each state
+SELECT state,sum(case_num),avg(temp) as avg_temp
+FROM (select county,state,max(cases) as case_num,avg((max_temp+min_temp)/2) as temp
+from usa_covid19
+group by county,state) as t1
+group by state
+having sum(case_num) is not null
+order by avg(temp);
