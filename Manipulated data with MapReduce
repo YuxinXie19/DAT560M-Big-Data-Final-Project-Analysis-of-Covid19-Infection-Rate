@@ -1,0 +1,39 @@
+#!/user/bin/env python
+import sys
+for line in sys.stdin:
+    line=line.strip()
+    date=line.split(",")[0]
+    state=line.split(",")[2]
+    cases=line.split(",")[3]
+    print '%s,%s,%s' % (date,state,cases)
+    
+#!/user/bin/env python
+import sys
+covid_data={}
+for line in sys.stdin:
+    date,state,cases=line.strip().split(',')
+    try:
+         cases=int(cases)
+    except ValueError:
+         continue
+
+    try:
+         covid_data[date+","+state].append(cases)
+
+    except:
+         covid_data[date+","+state]=[cases]
+
+for date_state in covid_data.keys():
+  print '%s,%s' %(date_state,sum(covid_data[date_state]))
+  
+#!/bin/bash
+hadoop jar /opt/cloudera/parcels/CDH-7.1.7-1.cdh7.1.7.p0.15945976/jars/hadoop-streaming-3.1.1.7.1.7.0-551.jar \
+        -Dmapred.reduce.tasks=1 \
+        -input /user/s.yuyang/usacovid19_data.csv \
+        -output /user/s.yuyang/covid_state_cases_output \
+        -file covid_mapper.py \
+        -file covid_reduce.py \
+        -mapper "python covid_mapper.py" \
+        -reducer "python covid_reduce.py"
+        
+hdfs dfs -cat covid_state_cases_output/part-00000 |grep '2020/12/4' |sort -rnk3 -t ","|cut -d "," -f2,3| head -15
